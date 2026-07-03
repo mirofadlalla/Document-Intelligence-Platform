@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from pydantic import Field
 
 class ValidationResult(BaseModel):
 
@@ -9,4 +10,4 @@ class ValidationResult(BaseModel):
 
     confidence_score: float
 
-    errors: list[str] = []
+    errors: list[str] = Field(default_factory=list)
