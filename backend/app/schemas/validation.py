@@ -1,23 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from pydantic import Field
 
 class ValidationResult(BaseModel):
 
-    # Business Validation
-    line_items_match_delivery: bool = False
+    required_fields_valid: bool = False
+
+    invoice_number_valid: bool = False
+
+    vendor_exists: bool = False
+
     price_calculation_valid: bool = False
 
-    # Deterministic Calculation
+    line_items_match_delivery: bool = False
+
     final_calculated_total: float | None = None
 
-    # Overall
     confidence_score: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
+        default=0,
+        ge=0,
+        le=1,
     )
 
+    # errors: list[str] = []
+
+    # warnings: list[str] = []
+    
     errors: list[str] = Field(default_factory=list)
 
     warnings: list[str] = Field(default_factory=list)

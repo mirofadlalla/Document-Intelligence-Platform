@@ -1,3 +1,14 @@
+"""
+InvoiceValidationRule
+======================
+Validates invoice number format via regex.
+
+Expected format: INV-<4-digit year>-<digits>
+Example: INV-2026-00125
+
+Sets validation.invoice_number_valid = True on success.
+"""
+
 import re
 
 from app.schemas.extraction import ExtractionResult
@@ -17,21 +28,19 @@ class InvoiceValidationRule(BaseValidationRule):
     ) -> None:
 
         if extraction.invoice_number is None:
-
-            validation.errors.append(
-                "Invoice number is missing."
-            )
-
+            # RequiredFieldsValidationRule already reported this as an error.
+            validation.invoice_number_valid = False
             return
 
-        if not re.match(
-            self.INVOICE_REGEX,
-            extraction.invoice_number,
-        ):
-
+        if re.match(self.INVOICE_REGEX, extraction.invoice_number):
+            validation.invoice_number_valid = True
+        else:
+            validation.invoice_number_valid = False
             validation.errors.append(
-                "Invalid invoice number format."
+                f"Invalid invoice number format: '{extraction.invoice_number}'. "
+                "Expected format: INV-YYYY-NNNNN (e.g. INV-2026-00125)."
             )
+
 
 # InvoiceValidationRule
 # مسئولة عن
