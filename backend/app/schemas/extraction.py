@@ -18,4 +18,8 @@ class ExtractionResult(BaseModel):
 
     invoice_number: str | None = None
 
-    financial: FinancialData = FinancialData()
+    raw_total: float | None = None
+
+    applied_discount_percentage: float | None = None
+
+    final_calculated_total: float | None = None

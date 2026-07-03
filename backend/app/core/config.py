@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     database_name: str = "mydatabase"
     groq_api_key: str = ""
-    llm_model: str = "gpt-4"
+    llm_provider: str = "groq"
+    llm_model: str = "openai/gpt-oss-120b"
 
     model_config = SettingsConfigDict(
         env_file=".env",
