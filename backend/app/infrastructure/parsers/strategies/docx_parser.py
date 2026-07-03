@@ -12,3 +12,4 @@ class DOCXParser(BaseParser):
             paragraph.text
             for paragraph in document.paragraphs
         )
+
