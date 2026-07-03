@@ -1,6 +1,4 @@
 
-
-
 SUPPORTED_EXTENSIONS = {
     ".pdf",
     ".docx",
