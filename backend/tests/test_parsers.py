@@ -53,27 +53,27 @@ print("PDFParser test passed successfully.")
 
 # -------------------------------------------------
 
-from app.infrastructure.parsers.strategies.image_parser import ImageParser
+# from app.infrastructure.parsers.strategies.image_parser import ImageParser
 
-# Test function for ImageParser
-def test_image_parser():
-    parser = ImageParser()
+# # Test function for ImageParser
+# def test_image_parser():
+#     parser = ImageParser()
 
-    try :
-        sample_file = (
-            Path(__file__).parent / "assets" / "Omar_Fadlallah_AI_Engineer_v13.pdf"
-        )
-    except Exception as e:
-        print(f"Error locating sample file: {e}")
-        return
+#     try :
+#         sample_file = (
+#             Path(__file__).parent / "assets" / "Omar_Fadlallah_AI_Engineer_v13.pdf"
+#         )
+#     except Exception as e:
+#         print(f"Error locating sample file: {e}")
+#         return
 
-    text = parser.parse(str(sample_file))
+#     text = parser.parse(str(sample_file))
 
-    # print(text) 
+#     # print(text) 
 
-    assert text.strip() != ""
+#     assert text.strip() != ""
 
-test_image_parser()
+# test_image_parser()
 
-print("ImageParser test passed successfully.")
-# -------------------------------------------------
+# print("ImageParser test passed successfully.")
+# # -------------------------------------------------

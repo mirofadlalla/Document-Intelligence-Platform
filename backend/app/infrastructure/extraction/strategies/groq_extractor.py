@@ -1,7 +1,7 @@
 from app.core.config import settings
 from app.infrastructure.extraction.builders.prompt_builder import PromptBuilder
-from app.infrastructure.extraction.clients.groq_client import groq_client
-from app.infrastructure.extraction.providers.base_extractor import BaseExtractor
+from app.infrastructure.extraction.groq_client import groq_client
+from app.infrastructure.extraction.strategies.base_extractor import BaseExtractor
 from app.schemas.attachment import Attachment
 from app.schemas.extraction import ExtractionResult
 
@@ -13,6 +13,9 @@ class GroqExtractor(BaseExtractor):
         self.client = groq_client
         self.model = settings.llm_model
 
+# extract(subject, body, attachments)
+# إلى:
+# extract(email: Email)
     async def extract(
         self,
         subject: str,
@@ -20,11 +23,10 @@ class GroqExtractor(BaseExtractor):
         attachments: list[Attachment],
     ) -> ExtractionResult:
 
-        messages = PromptBuilder().build(
+        messages = PromptBuilder().add_email(
             subject=subject,
             body=body,
-            attachments=attachments,
-        )
+        ).add_documents(attachments).build()
 
         response = await self.client.beta.chat.completions.parse(
             model=self.model,

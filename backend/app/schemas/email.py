@@ -1,10 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+
+from app.schemas.attachment import Attachment
 
 
-class EmailData(BaseModel):
+class Email(BaseModel):
 
-    sender: EmailStr
+    sender: str
 
     subject: str
 
     body: str
+
+    attachments: list[Attachment]

@@ -22,4 +22,4 @@ class ExtractionResult(BaseModel):
 
     applied_discount_percentage: float | None = None
 
-    final_calculated_total: float | None = None
+    invoice_final_total: float | None = None

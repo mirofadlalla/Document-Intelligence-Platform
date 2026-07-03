@@ -1,6 +1,6 @@
 from app.core.config import settings
 
-from app.infrastructure.extraction.providers.groq_extractor import (
+from app.infrastructure.extraction.strategies.groq_extractor import (
     GroqExtractor,
 )
 
