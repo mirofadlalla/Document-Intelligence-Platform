@@ -43,6 +43,18 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          git remote add space "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
+          # Create an orphan branch (no commit history) so we can strip
+          # binary test assets and diagrams that HF Spaces pre-receive hook
+          # rejects.  The main branch on GitHub keeps full history.
+          git checkout --orphan deploy-clean
 
-          git push --force space main:main
+          # Remove binary files from the working tree & staging area
+          rm -rf backend/tests/assets/ docs/digrams/
+
+          # Stage everything else and commit
+          git add -A
+          git commit -m "Deploy to HF Spaces"
+
+          # Push only this clean, single-commit branch
+          git remote add space "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
+          git push --force space deploy-clean:main
