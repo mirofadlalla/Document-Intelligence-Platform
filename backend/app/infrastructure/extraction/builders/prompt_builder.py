@@ -58,20 +58,23 @@ Rules:
 4. Never infer missing values.
 5. Unknown scalar values must be null.
 6. Unknown lists must be [].
-7. Extract invoice_line_items ONLY from invoice documents.
-8. Extract delivery_line_items ONLY from delivery notes or delivery slips.
-9. Never merge line items across different documents.
-10. Preserve product names exactly as written.
-11. Preserve quantities exactly.
-12. Preserve item codes exactly.
-13. Extract financial fields exactly as written.
-14. Extract business signals from the email body when present:
+7. Extract invoice_line_items ONLY from documents labeled "Document Type: Invoice".
+8. Extract delivery_line_items ONLY from documents labeled "Document Type: Delivery Note / Delivery Slip".
+9. IMPORTANT: It is normal and REQUIRED that invoice_line_items and delivery_line_items contain
+   the same items. Extract them independently from their respective source documents.
+   Do NOT leave delivery_line_items empty just because the items also appear in the invoice.
+10. Never merge line items across different documents.
+11. Preserve product names exactly as written.
+12. Preserve quantities exactly.
+13. Preserve item codes exactly.
+14. Extract financial fields exactly as written.
+15. Extract business signals from the email body when present:
    - urgency
    - routing instructions
    - discount information
    - approval requests
-15. Ignore marketing text and signatures.
-16. Return valid JSON only.
+16. Ignore marketing text and signatures.
+17. Return valid JSON only.
 """
 
 
@@ -146,7 +149,24 @@ Content:
 """
             )
 
-        user_prompt = f"{email_section}{''.join(doc_sections)}Return JSON following this schema:\n\n{json.dumps(self.schema, indent=2)}"
+        # Build a document map summary at the top so the LLM sees
+        # the classified types before reading each document.
+        doc_map_lines = []
+        for i, doc in enumerate(self.documents, 1):
+            doc_map_lines.append(
+                f"  Attachment #{i}: {doc.get('filename', '')} "
+                f"→ {doc.get('document_type', 'Unknown')}"
+            )
+        doc_map_section = ""
+        if doc_map_lines:
+            doc_map_section = (
+                "DOCUMENT MAP\n"
+                + "=" * 50 + "\n"
+                + "\n".join(doc_map_lines)
+                + "\n\n"
+            )
+
+        user_prompt = f"{email_section}{doc_map_section}{''.join(doc_sections)}Return JSON following this schema:\n\n{json.dumps(self.schema, indent=2)}"
 
         return [
             {

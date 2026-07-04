@@ -80,5 +80,11 @@ class ExtractionResult(BaseModel):
     )
     delivery_line_items: list[LineItem] = Field(
         default_factory=list,
-        description="Line items extracted ONLY from delivery notes or delivery slips. Each item must preserve product_name, quantity, unit_price, and item_code exactly as written.",
+        description=(
+            "Line items extracted ONLY from delivery note or delivery slip documents. "
+            "IMPORTANT: Even if these items also appear in the invoice, you MUST extract "
+            "them here independently from the delivery document. "
+            "This list should NOT be empty when a delivery note is present. "
+            "Each item must preserve product_name, quantity, unit_price, and item_code exactly as written."
+        ),
     )
