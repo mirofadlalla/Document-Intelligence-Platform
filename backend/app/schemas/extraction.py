@@ -2,36 +2,83 @@ from pydantic import BaseModel, Field
 
 
 class LineItem(BaseModel):
-    product_name: str
-    quantity: int
-    unit_price: float | None = None
-    item_code: str | None = None  # Optional: used as primary matching key in CrossDocumentService
+    product_name: str = Field(
+        description="Product/service name exactly as it appears on the document"
+    )
+    quantity: int = Field(description="Quantity of the item as an integer")
+    unit_price: float | None = Field(
+        default=None, description="Unit price if present on the document"
+    )
+    item_code: str | None = Field(
+        default=None,
+        description="Item/SKU/product code if present. Used as primary matching key for cross-document validation.",
+    )
 
 
 class ExtractionResult(BaseModel):
 
     # Invoice Metadata
-    vendor_name: str | None = None
-    invoice_number: str | None = None
+    vendor_name: str | None = Field(
+        default=None, description="Supplier/vendor company name from the invoice"
+    )
+    invoice_number: str | None = Field(
+        default=None, description="Invoice identifier/number from the invoice"
+    )
 
     # Legacy Financial Fields (kept for backward compatibility)
-    raw_total: float | None = None
-    applied_discount_percentage: float | None = None
-    
-    # Real-world Financial Fields
-    subtotal: float | None = None
-    tax_amount: float | None = None
-    shipping_amount: float | None = None
-    discount_amount: float | None = None
-    other_charges: float | None = None
-    
-    # Final Total
-    invoice_final_total: float | None = None
+    raw_total: float | None = Field(
+        default=None,
+        description="Legacy field: original total amount extracted before new schema",
+    )
+    applied_discount_percentage: float | None = Field(
+        default=None,
+        description="Legacy field: discount percentage applied to the total",
+    )
 
-    # Email Hidden Instructions
-    is_urgent: bool = False
-    routing_instruction: str | None = None
+    # Real-world Financial Fields
+    subtotal: float | None = Field(
+        default=None,
+        description="Subtotal before tax, discounts, and shipping. Usually labeled 'Subtotal', 'Net Amount', or 'Total before tax'.",
+    )
+    tax_amount: float | None = Field(
+        default=None,
+        description="Tax/VAT/GST amount. Usually labeled 'Tax', 'VAT', 'GST', or 'Sales Tax'.",
+    )
+    shipping_amount: float | None = Field(
+        default=None,
+        description="Shipping/freight/delivery charges. Usually labeled 'Shipping', 'Freight', 'Delivery', or 'Handling'.",
+    )
+    discount_amount: float | None = Field(
+        default=None,
+        description="Monetary discount amount deducted from subtotal. Usually labeled 'Discount', 'Early Payment Discount', or 'Trade Discount'.",
+    )
+    other_charges: float | None = Field(
+        default=None,
+        description="Any other charges not covered above (e.g., fees, surcharges).",
+    )
+
+    # Final Total
+    invoice_final_total: float | None = Field(
+        default=None,
+        description="Final amount payable. Usually labeled 'Total', 'Grand Total', 'Amount Due', 'Invoice Total', or 'Balance Due'.",
+    )
+
+    # Email Hidden Instructions (Business Signals)
+    is_urgent: bool = Field(
+        default=False,
+        description="True if email indicates urgency (e.g., 'urgent', 'asap', 'immediate', 'rush', 'priority', 'expedite').",
+    )
+    routing_instruction: str | None = Field(
+        default=None,
+        description="Explicit routing/approval instruction from email body (e.g., 'send to finance', 'route to manager', 'needs approval', 'forward to accounting', 'send for review').",
+    )
 
     # Cross Document Tracking
-    invoice_line_items: list[LineItem] = Field(default_factory=list)
-    delivery_line_items: list[LineItem] = Field(default_factory=list)
+    invoice_line_items: list[LineItem] = Field(
+        default_factory=list,
+        description="Line items extracted ONLY from invoice documents. Each item must preserve product_name, quantity, unit_price, and item_code exactly as written.",
+    )
+    delivery_line_items: list[LineItem] = Field(
+        default_factory=list,
+        description="Line items extracted ONLY from delivery notes or delivery slips. Each item must preserve product_name, quantity, unit_price, and item_code exactly as written.",
+    )
