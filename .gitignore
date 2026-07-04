@@ -19,4 +19,3 @@ htmlcov/
 # HF Spaces pre-receive hook rejects pushes containing binary files.
 # These files stay on disk for local testing but are not tracked.
 backend/tests/assets/
-docs/digrams/
