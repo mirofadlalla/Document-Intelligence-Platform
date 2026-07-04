@@ -1,30 +1,82 @@
+"""
+ProcessingJob
+=============
+Persistent record that tracks the full lifecycle of one email processing request.
 
-from pydantic import BaseModel
+ProcessingStatus
+----------------
+Tracks which pipeline stage the job is currently in.
+Used by the repository layer — never exposed as business logic.
+"""
+
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+from app.schemas.api import ResponseMetadata
+from app.schemas.attachment import Attachment
+from app.schemas.extraction import ExtractionResult
+from app.schemas.validation import ValidationResult
+from app.schemas.workflow import WorkflowAction
+
+
+class ProcessingStatus(str, Enum):
+    RECEIVED = "RECEIVED"
+    PARSING = "PARSING"
+    EXTRACTING = "EXTRACTING"
+    VALIDATING = "VALIDATING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
 
 class ProcessingJob(BaseModel):
+    """
+    Full snapshot of a single document processing run.
 
-    metadata: ...
+    Fields
+    ------
+    job_id:
+        Unique identifier assigned at creation (MongoDB ObjectId as string).
+    status:
+        Current lifecycle stage.
+    metadata:
+        Source email address and timestamp.
+    attachments:
+        Parsed document records produced by IngestionService.
+    extraction:
+        LLM extraction result (None until extraction completes).
+    validation:
+        Validation result (None until validation completes).
+    workflow_action:
+        Final routing decision (None until workflow is decided).
+    error_message:
+        Populated only when status == FAILED.
+    created_at / updated_at:
+        UTC timestamps managed by the repository layer.
+    """
 
-    email: ...
+    job_id: Optional[str] = None
 
-    attachments: ...
+    status: ProcessingStatus = ProcessingStatus.RECEIVED
 
-    extraction: ...
+    metadata: ResponseMetadata
 
-    validation: ...
+    attachments: list[Attachment] = Field(default_factory=list)
 
-    workflow: ...
+    extraction: Optional[ExtractionResult] = None
 
-# class ProcessingStatus(Enum):
+    validation: Optional[ValidationResult] = None
 
-#     RECEIVED
+    workflow_action: Optional[WorkflowAction] = None
 
-#     PARSING
+    error_message: Optional[str] = None
 
-#     EXTRACTING
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(tz=timezone.utc)
+    )
 
-#     VALIDATING
-
-#     COMPLETED
-
-#     FAILED
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(tz=timezone.utc)
+    )
