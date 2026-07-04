@@ -122,3 +122,52 @@ class ProcessingJobRepository:
         logger.info(
             "ProcessingJob updated: job_id=%s status=%s", job_id, status.value
         )
+
+    async def list_jobs(self, skip: int = 0, limit: int = 20, filters: Optional[dict[str, Any]] = None) -> list[ProcessingJob]:
+        query = filters or {}
+        cursor = self._col.find(query).sort("created_at", -1).skip(skip).limit(limit)
+        jobs = []
+        async for doc in cursor:
+            doc["job_id"] = str(doc.pop("_id"))
+            jobs.append(ProcessingJob.model_validate(doc))
+        return jobs
+
+    async def delete_job(self, job_id: str) -> bool:
+        try:
+            oid = ObjectId(job_id)
+        except Exception:
+            return False
+        result = await self._col.delete_one({"_id": oid})
+        return result.deleted_count > 0
+
+    async def get_statistics(self) -> dict[str, Any]:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": None,
+                    "total_jobs": {"$sum": 1},
+                    "approved_jobs": {"$sum": {"$cond": [{"$eq": ["$workflow_action", "APPROVE"]}, 1, 0]}},
+                    "review_jobs": {"$sum": {"$cond": [{"$eq": ["$workflow_action", "ROUTE_TO_HUMAN_REVIEW"]}, 1, 0]}},
+                    "rejected_jobs": {"$sum": {"$cond": [{"$eq": ["$workflow_action", "REJECT"]}, 1, 0]}},
+                    "avg_confidence": {"$avg": "$validation.confidence_score"}
+                }
+            }
+        ]
+        stats_cursor = self._col.aggregate(pipeline)
+        stats_list = await stats_cursor.to_list(length=1)
+        if not stats_list:
+            return {
+                "total_jobs": 0,
+                "approved_jobs": 0,
+                "review_jobs": 0,
+                "rejected_jobs": 0,
+                "average_confidence": 0.0
+            }
+        stats = stats_list[0]
+        return {
+            "total_jobs": stats.get("total_jobs", 0),
+            "approved_jobs": stats.get("approved_jobs", 0),
+            "review_jobs": stats.get("review_jobs", 0),
+            "rejected_jobs": stats.get("rejected_jobs", 0),
+            "average_confidence": stats.get("avg_confidence", 0.0)
+        }

@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.logging import logger
@@ -50,19 +51,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# ── Health check ─────────────────────────────────────────────────────────────
 
-@app.get("/health", tags=["System"])
-async def health() -> dict:
-    """Lightweight liveness probe used by load balancers and Docker."""
-    return {"status": "ok", "version": "1.0.0"}
-
-
-# ── API routes (to be registered once built) ─────────────────────────────────
-# from app.api.routes import processing
-# app.include_router(processing.router, prefix=settings.api_prefix)
-
+# ── API routes ───────────────────────────────────────────────────────────────
+from app.api.routes import router as api_router
+app.include_router(api_router, prefix="/api/v1")
 
 if __name__ == "__main__":
     uvicorn.run(
