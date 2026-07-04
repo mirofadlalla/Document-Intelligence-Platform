@@ -14,9 +14,18 @@ class ExtractionResult(BaseModel):
     vendor_name: str | None = None
     invoice_number: str | None = None
 
-    # Financial Fields
+    # Legacy Financial Fields (kept for backward compatibility)
     raw_total: float | None = None
     applied_discount_percentage: float | None = None
+    
+    # Real-world Financial Fields
+    subtotal: float | None = None
+    tax_amount: float | None = None
+    shipping_amount: float | None = None
+    discount_amount: float | None = None
+    other_charges: float | None = None
+    
+    # Final Total
     invoice_final_total: float | None = None
 
     # Email Hidden Instructions

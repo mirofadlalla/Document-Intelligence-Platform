@@ -22,8 +22,8 @@ def get_client() -> AsyncIOMotorClient:
     """Return the shared Motor client, creating it on first call."""
     global _client
     if _client is None:
-        _client = AsyncIOMotorClient(settings.mongodb_uri)
-        logger.info("MongoDB client initialised: %s", settings.mongodb_uri)
+        _client = AsyncIOMotorClient(settings.MONGO_URI)
+        logger.info("MongoDB client initialised: %s", settings.MONGO_URI)
     return _client
 
 
