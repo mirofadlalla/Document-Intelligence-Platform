@@ -1,31 +1,49 @@
 """
-PaddleOCR Engine — lazy initialisation
-========================================
-PaddleOCR is a heavy optional dependency (requires C++ tooling and GPU drivers).
-We avoid importing it at module-load time so the rest of the application can
-start without it installed.
+PaddleOCR Engine
+================
 
-The engine is instantiated on first call to `get_ocr_engine()`.
+Lazy-loaded singleton for PaddleOCR.
+
+The OCR engine is created only on the first request and then cached for
+the lifetime of the application.
+
+This keeps application startup fast while avoiding repeated model loading.
 """
 
-_ocr_engine = None
+from functools import lru_cache
 
 
+@lru_cache(maxsize=1)
 def get_ocr_engine():
-    """Return the shared PaddleOCR instance, initialising it on first call."""
-    global _ocr_engine
-    if _ocr_engine is None:
-        try:
-            from paddleocr import PaddleOCR  # noqa: PLC0415
-        except ImportError as exc:
-            raise ImportError(
-                "PaddleOCR is not installed. "
-                "Install it with: pip install paddlepaddle paddleocr"
-            ) from exc
+    """
+    Return a cached PaddleOCR instance.
 
-        _ocr_engine = PaddleOCR(
-            use_doc_orientation_classify=True,
-            use_doc_unwarping=True,
-            use_textline_orientation=True,
+    Raises:
+        ImportError:
+            If PaddleOCR is not installed.
+
+        RuntimeError:
+            If the OCR engine cannot be initialized.
+    """
+
+    try:
+        from paddleocr import PaddleOCR
+    except ImportError as exc:
+        raise ImportError(
+            "PaddleOCR is not installed. "
+            "Install it with:\n"
+            "pip install paddlepaddle paddleocr"
+        ) from exc
+
+    try:
+        return PaddleOCR(
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
         )
-    return _ocr_engine
+    except Exception as exc:
+        raise RuntimeError(
+            "Failed to initialize PaddleOCR. "
+            "This is usually caused by incompatible versions of "
+            "paddlepaddle, paddleocr, or paddlex."
+        ) from exc
