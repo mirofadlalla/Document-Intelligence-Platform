@@ -1,0 +1,49 @@
+# ── Version control ───────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Secrets (never bake credentials into the image) ───────────────────────────
+.env
+**/.env
+*.key
+*.pem
+
+# ── Frontend (not part of the backend container) ──────────────────────────────
+frontend/
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+docs/
+*.md
+
+# ── Python bytecode & caches ──────────────────────────────────────────────────
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── IDE / editor files ────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── OS artefacts ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Sample data (not needed in the container) ─────────────────────────────────
+sample_data/
+
+# ── Docker files themselves (avoid recursion) ─────────────────────────────────
+docker-compose.yml

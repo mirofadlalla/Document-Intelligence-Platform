@@ -1,3 +1,13 @@
+---
+title: Document Intelligence Platform
+emoji: 🧾
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Document Intelligence Platform
 
 Production-grade AI-powered document intelligence platform that extracts structured data from emails and multi-format documents using LLMs, validates extracted information through deterministic business rules, performs cross-document verification, and automates business workflow decisions.
