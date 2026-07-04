@@ -3,6 +3,41 @@ import json
 from app.schemas.attachment import Attachment
 
 
+def _classify_document(filename: str, content: str | None) -> str:
+    """
+    Infer the business document type from the filename and a snippet of the
+    document content. Returns a human-readable label that is embedded in the
+    prompt so the LLM knows which documents are invoices and which are delivery
+    notes — without relying on file-format type alone.
+    """
+    name_lower = filename.lower()
+    snippet = (content or "")[:500].lower()
+
+    # Delivery note / slip signals
+    delivery_keywords = [
+        "delivery note", "delivery slip", "delivery order",
+        "despatch note", "dispatch note",
+        "dn-", "dn ",
+    ]
+    if any(kw in name_lower or kw in snippet for kw in delivery_keywords):
+        return "Delivery Note / Delivery Slip"
+
+    # Invoice signals
+    invoice_keywords = [
+        "invoice", "inv-", "bill ", "billing",
+        "tax invoice", "proforma",
+    ]
+    if any(kw in name_lower or kw in snippet for kw in invoice_keywords):
+        return "Invoice"
+
+    # Purchase order signals
+    po_keywords = ["purchase order", "po-", "po ", "order form"]
+    if any(kw in name_lower or kw in snippet for kw in po_keywords):
+        return "Purchase Order"
+
+    return "Unknown Business Document"
+
+
 SYSTEM_PROMPT = """
 You are an information extraction engine.
 
@@ -58,7 +93,10 @@ class PromptBuilder:
         self.documents = [
             {
                 "filename": attachment.filename,
-                "type": attachment.file_type.value,
+                "file_format": attachment.file_type.value,
+                "document_type": _classify_document(
+                    attachment.filename, attachment.extracted_text
+                ),
                 "content": attachment.extracted_text,
             }
             for attachment in attachments
@@ -97,8 +135,11 @@ ATTACHMENT #{i}
 Filename:
 {doc.get('filename', '')}
 
-Type:
-{doc.get('type', '')}
+Document Type:
+{doc.get('document_type', '')}
+
+File Format:
+{doc.get('file_format', '')}
 
 Content:
 {doc.get('content', '')}
