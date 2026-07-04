@@ -5,7 +5,7 @@ from .base_parser import BaseParser
 
 class DOCXParser(BaseParser):
 
-    def parse(file_path: str) -> str:
+    def parse(self, file_path: str) -> str:
         doc = Document(file_path)
 
         parts = []
