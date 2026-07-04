@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://OmarFadlallah-document-intelligence-platform.hf.space/api/$1" }
+  ]
+}
