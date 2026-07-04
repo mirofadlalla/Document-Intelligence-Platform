@@ -1,60 +1,60 @@
-# name: CD
+name: CD
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# permissions:
-#   contents: read
+permissions:
+  contents: read
 
-# concurrency:
-#   group: deploy-to-huggingface
-#   cancel-in-progress: true
+concurrency:
+  group: deploy-to-huggingface
+  cancel-in-progress: true
 
-# jobs:
-#   deploy:
-#     name: Deploy to Hugging Face Spaces
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    name: Deploy to Hugging Face Spaces
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-#       - name: Deploy to Hugging Face Space
-#         env:
-#           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-#           HF_USERNAME: ${{ secrets.HF_USERNAME }}
-#           HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
-#         run: |
-#           set -e
+      - name: Deploy to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          set -e
 
-#           if [ -z "$HF_TOKEN" ]; then
-#             echo "::error::Secret HF_TOKEN is not set. Add it under Settings > Secrets and variables > Actions." >&2
-#             exit 1
-#           fi
-#           if [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
-#             echo "::error::Secrets HF_USERNAME and/or HF_SPACE_NAME are not set. Add them under Settings > Secrets and variables > Actions." >&2
-#             exit 1
-#           fi
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::Secret HF_TOKEN is not set. Add it under Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+          if [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
+            echo "::error::Secrets HF_USERNAME and/or HF_SPACE_NAME are not set. Add them under Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
 
-#           git config --global user.name "github-actions[bot]"
-#           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-#           # Create an orphan branch (no commit history) so we can strip
-#           # binary test assets and diagrams that HF Spaces pre-receive hook
-#           # rejects.  The main branch on GitHub keeps full history.
-#           git checkout --orphan deploy-clean
+          # Create an orphan branch (no commit history) so we can strip
+          # binary test assets and diagrams that HF Spaces pre-receive hook
+          # rejects.  The main branch on GitHub keeps full history.
+          git checkout --orphan deploy-clean
 
-#           # Remove binary files from the working tree & staging area
-#           rm -rf backend/tests/assets/ docs/digrams/
+          # Remove binary files from the working tree & staging area
+          rm -rf backend/tests/assets/ docs/digrams/
 
-#           # Stage everything else and commit
-#           git add -A
-#           git commit -m "Deploy to HF Spaces"
+          # Stage everything else and commit
+          git add -A
+          git commit -m "Deploy to HF Spaces"
 
-#           # Push only this clean, single-commit branch
-#           git remote add space "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
-#           git push --force space deploy-clean:main
+          # Push only this clean, single-commit branch
+          git remote add space "https://oauth2:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
+          git push --force space deploy-clean:main
