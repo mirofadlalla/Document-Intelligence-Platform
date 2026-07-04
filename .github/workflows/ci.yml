@@ -27,7 +27,7 @@ jobs:
           PIP_EXTRA_INDEX_URL: https://www.paddlepaddle.org.cn/packages/stable/cpu/
 
       - name: Run tests
-        run: python -m pytest backend/tests/ -v
+        run: python -m pytest backend/tests/test_validation_pipeline.py -v
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}

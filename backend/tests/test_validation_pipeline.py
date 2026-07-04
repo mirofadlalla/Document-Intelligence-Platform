@@ -206,7 +206,7 @@ def test_reject_on_missing_required_fields_sets_errors():
     assert not validation.required_fields_valid
     assert any("vendor" in e.lower() for e in validation.errors)
     assert any("invoice number" in e.lower() for e in validation.errors)
-    assert any("raw total" in e.lower() for e in validation.errors)
+    assert any("subtotal" in e.lower() for e in validation.errors)
 
 
 # ---------------------------------------------------------------------------
